@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Ứng dụng Đọc Tin Tức</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .container { max-width: 600px; margin: auto; }
+    .article { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+    input, button, textarea { padding: 8px; margin: 4px 0; width: 100%; }
+    textarea { resize: vertical; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Đăng nhập</h2>
+    <input type="text" id="username" placeholder="Tên tài khoản" />
+    <input type="password" id="password" placeholder="Mật khẩu" />
+    <button onclick="login()">Đăng nhập</button>
+
+    <hr>
+    <h2>Thêm bài viết</h2>
+    <input type="text" id="articleTitle" placeholder="Tiêu đề" />
+    <textarea id="articleContent" rows="4" placeholder="Nội dung"></textarea>
+    <button onclick="addArticle()">Thêm bài viết</button>
+
+    <hr>
+    <h2>Tìm kiếm bài viết</h2>
+    <input type="text" id="searchKeyword" placeholder="Từ khóa tìm kiếm" />
+    <button onclick="searchArticle()">Tìm kiếm</button>
+
+    <hr>
+    <h2>Danh sách bài viết</h2>
+    <div id="articles"></div>
+  </div>
+
+  <script>
+    function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => res.text())
+      .then(msg => alert(msg));
+    }
+
+    function addArticle() {
+      const title = document.getElementById('articleTitle').value;
+      const content = document.getElementById('articleContent').value;
+      fetch('/api/articles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content })
+      })
+      .then(res => res.text())
+      .then(msg => {
+        alert(msg);
+        loadArticles();
+      });
+    }
+
+    function searchArticle() {
+      const keyword = document.getElementById('searchKeyword').value;
+      fetch(`/api/articles/search?keyword=${keyword}`)
+      .then(res => res.json())
+      .then(data => displayArticles(data));
+    }
+
+    function loadArticles() {
+      fetch('/api/articles')
+      .then(res => res.json())
+      .then(data => displayArticles(data));
+    }
+
+    function displayArticles(articles) {
+      const div = document.getElementById('articles');
+      div.innerHTML = '';
+      articles.forEach(art => {
+        const item = document.createElement('div');
+        item.className = 'article';
+        item.innerHTML = `<strong>${art.title}</strong><br>${art.content}`;
+        div.appendChild(item);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadArticles);
+  </script>
+</body>
+</html>
